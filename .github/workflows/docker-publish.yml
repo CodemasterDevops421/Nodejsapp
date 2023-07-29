@@ -1,0 +1,42 @@
+name: Publish Docker image to AWS ECR
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  push_to_registry:
+    name: Push Docker image to AWS ECR
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out the repo
+      uses: actions/checkout@v2
+
+    - name: Bump version and push tag
+      id: bump_version
+      run: |
+        chmod +x version.sh
+        ./version.sh -v patch
+      env:
+        GIT_AUTHOR_NAME: github-actions
+        GIT_AUTHOR_EMAIL: github-actions@github.com
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: your-ecr-repo-name
+        IMAGE_TAG: ${{ steps.bump_version.outputs.git-tag }}
+      run: |
+        # Build a docker container and
+        # push it to ECR so that it can
+        # be deployed to ECS.
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
