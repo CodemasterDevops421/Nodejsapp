@@ -30,7 +30,7 @@ jobs:
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: your-ecr-repo-name
+        ECR_REPOSITORY: nodejsapp
         IMAGE_TAG: ${{ steps.bump_version.outputs.git-tag }}
       run: |
         # Build a docker container and
