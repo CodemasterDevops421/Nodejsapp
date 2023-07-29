@@ -1,5 +1,3 @@
-####### Git Versioning ##########
-
 #!/bin/bash
 
 # Define colors for better output visibility
