@@ -1,20 +1,30 @@
-name: Publish Docker image to AWS ECR
+name: Build and Push Node.js Image to AWS ECR
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  push_to_registry:
-    name: Push Docker image to AWS ECR
+  build-and-push:
+    name: Build and Push to ECR
     runs-on: ubuntu-latest
-
     steps:
-    - name: Check out the repo
+    - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Bump version and push tag
-      id: bump_version
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1  # replace with your AWS region
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Automatic Tagging of Releases
+      id: increment-git-tag
       run: |
         chmod +x version.sh
         ./version.sh -v patch
@@ -22,23 +32,13 @@ jobs:
         GIT_AUTHOR_NAME: github-actions
         GIT_AUTHOR_EMAIL: github-actions@github.com
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-      env:
-        AWS_REGION: us-west-2  # replace with your AWS region
-
-    - name: Build, tag, and push image to Amazon ECR
+    - name: Build, Tag, and Push the Image to Amazon ECR
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: nodejsapp
-        IMAGE_TAG: ${{ steps.bump_version.outputs.git-tag }}
+        ECR_REPOSITORY: nodejsapp  # replace with your ECR repository name
+        IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
       run: |
-        # Build a docker container and
-        # push it to ECR so that it can
-        # be deployed to ECS.
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
