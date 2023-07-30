@@ -15,13 +15,13 @@ function print_banner() {
 
 # Function to display usage information
 function print_usage() {
-    echo -e "${GREEN}Usage: $0 -v [Release|hotfix|oschange]${NC}"
+    echo -e "${GREEN}Usage: $0 -v [Release|Hotfix|oschange]${NC}"
     echo -e "${GREEN}Example: $0 -v oschange${NC}"
 }
 
 # Function to handle incorrect input
 function handle_incorrect_input() {
-    echo -e "${RED}No version type (https://semver.org/) or incorrect type specified, try: -v [Release, hotfix, oschange]${NC}"
+    echo -e "${RED}No version type (https://semver.org/) or incorrect type specified, try: -v [Release, Hotfix, oschange]${NC}"
     print_usage
     exit 1
 }
@@ -72,7 +72,7 @@ VNUM3=${CURRENT_VERSION_PARTS[2]}
 if [[ $VERSION == 'Release' ]]
 then
     VNUM1=v$((VNUM1+1))
-elif [[ $VERSION == 'hotfix' ]]
+elif [[ $VERSION == 'Hotfix' ]]
 then
     VNUM2=$((VNUM2+1))
 elif [[ $VERSION == 'oschange' ]]
